@@ -1,47 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import { resolveResource } from "@tauri-apps/api/path";
-import { Child, Command } from "@tauri-apps/plugin-shell";
+import { Whisper } from "./whisper";
 
 function App() {
   const [count, setCount] = useState(0);
-  const childRef = useRef<Child>();
-
-  async function startWebUI() {
-    const whisperPath = await resolveResource("Whisper-WebUI");
-    const command = Command.create(
-      "sh",
-      ["./start-webui.sh", "--inbrowser", "false"],
-      {
-        cwd: whisperPath,
-      }
-    );
-    command.on("close", (data) => {
-      console.log(
-        `command finished with code ${data.code} and signal ${data.signal}`
-      );
-    });
-    command.on("error", (error) => console.error(`command error: "${error}"`));
-    command.stdout.on("data", (line) =>
-      console.log(`command stdout: "${line}"`)
-    );
-    command.stderr.on("data", (line) =>
-      console.log(`command stderr: "${line}"`)
-    );
-    childRef.current = await command.spawn();
-  }
-
-  async function stopWebUI() {
-    await childRef.current?.kill();
-  }
 
   useEffect(() => {
-    startWebUI();
+    const whisper = new Whisper();
+    whisper.start();
     return () => {
-      stopWebUI();
-    };
+      whisper.stop();
+    }
   }, []);
 
   return (

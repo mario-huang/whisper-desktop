@@ -16,9 +16,35 @@
         }
       ]
     },
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "powershell",
+          "cmd": "powershell",
+          "args": true
+        },
+        {
+          "name": "lsof",
+          "cmd": "lsof",
+          "args": true
+        },
+        {
+          "name": "taskkill",
+          "cmd": "taskkill",
+          "args": true
+        },
+        {
+          "name": "kill",
+          "cmd": "kill",
+          "args": true
+        }
+      ]
+    },
     "core:default",
     "opener:default",
     "shell:default",
-    "shell:allow-kill"
+    "shell:allow-kill",
+    "os:default"
   ]
 }
