@@ -31,6 +31,8 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": ["../Whisper-WebUI"]
+    "resources": {
+      "../Whisper-WebUI/": "Whisper-WebUI/"
+    }
   }
 }
