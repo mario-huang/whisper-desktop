@@ -8,6 +8,7 @@ import { UnlistenFn } from "@tauri-apps/api/event";
 export class Whisper {
   port: number | null = null;
   isStop = false;
+  appWindow = getCurrentWindow();
   unlistenCloseRequested: UnlistenFn | null = null;
 
   async start() {
@@ -38,7 +39,7 @@ export class Whisper {
     command.stdout.on("data", (line) => {
       console.log(`command stdout: "${line}"`);
       if (line.includes("Running on local URL")) {
-        
+        window.location.replace(`http://127.0.0.1:${this.port}`);
       }
     });
     command.stderr.on("data", (line) => {
@@ -96,12 +97,11 @@ export class Whisper {
   }
 
   async subscribeCloseRequested() {
-    const appWindow = getCurrentWindow();
-    this.unlistenCloseRequested = await appWindow.onCloseRequested(
+    this.unlistenCloseRequested = await this.appWindow.onCloseRequested(
       async (event) => {
         event.preventDefault();
         await this.stop();
-        appWindow.close();
+        this.appWindow.close();
       }
     );
   }
