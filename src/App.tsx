@@ -6,9 +6,9 @@ import { Whisper } from "./whisper";
 
 function App() {
   const [count, setCount] = useState(0);
+  const whisper = new Whisper();
 
   useEffect(() => {
-    const whisper = new Whisper();
     whisper.start();
     return () => {
       whisper.stop();

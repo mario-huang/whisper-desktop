@@ -16,7 +16,7 @@ export class Whisper {
     const whisperPath = await resolveResource("Whisper-WebUI");
     const command = Command.create(
       "sh",
-      ["./start-webui.sh", "--inbrowser", "false"],
+      ["./start-webui.sh", "--inbrowser", "false", "--server_port", this.port.toString()],
       {
         cwd: whisperPath,
       }
