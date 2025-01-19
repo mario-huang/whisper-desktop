@@ -11,9 +11,13 @@ function App() {
 
   async function startWebUI() {
     const whisperPath = await resolveResource("Whisper-WebUI");
-    const command = Command.create("sh", ["./start-webui.sh", "--inbrowser", "false"], {
-      cwd: whisperPath,
-    });
+    const command = Command.create(
+      "sh",
+      ["./start-webui.sh", "--inbrowser", "false"],
+      {
+        cwd: whisperPath,
+      }
+    );
     command.on("close", (data) => {
       console.log(
         `command finished with code ${data.code} and signal ${data.signal}`
@@ -30,7 +34,7 @@ function App() {
   }
 
   async function stopWebUI() {
-    childRef.current?.kill();
+    await childRef.current?.kill();
   }
 
   useEffect(() => {

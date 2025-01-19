@@ -16,6 +16,16 @@
         }
       ]
     },
+    {
+      "identifier": "shell:allow-kill",
+      "allow": [
+        {
+          "name": "sh",
+          "cmd": "sh",
+          "args": true
+        }
+      ]
+    },
     "core:default",
     "opener:default",
     "shell:default"
