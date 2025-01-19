@@ -14,14 +14,17 @@ export class Whisper {
   async start() {
     this.port = await this.getPort();
     const whisperPath = await resolveResource("Whisper-WebUI");
+    const serverName = "localhost";
     const command = Command.create(
       "sh",
       [
         "./start-webui.sh",
-        "--inbrowser",
-        "false",
+        "--server_name",
+        serverName,
         "--server_port",
         this.port.toString(),
+        "--inbrowser",
+        "false",
       ],
       {
         cwd: whisperPath,
@@ -38,8 +41,8 @@ export class Whisper {
     command.on("error", (error) => console.error(`command error: "${error}"`));
     command.stdout.on("data", (line) => {
       console.log(`command stdout: "${line}"`);
-      if (line.includes("Running on local URL")) {
-        window.location.replace(`http://127.0.0.1:${this.port}`);
+      if (line.includes(serverName)) {
+        window.location.replace(`http://${serverName}:${this.port}`);
       }
     });
     command.stderr.on("data", (line) => {
