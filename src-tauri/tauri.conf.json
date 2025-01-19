@@ -3,8 +3,13 @@
   "productName": "whisper-desktop",
   "version": "0.1.0",
   "identifier": "com.whisper-desktop.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
   "app": {
-    "withGlobalTauri": true,
     "windows": [
       {
         "title": "whisper-desktop",
@@ -25,7 +30,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "resources": ["../Whisper-WebUI"]
+    ]
   }
 }
