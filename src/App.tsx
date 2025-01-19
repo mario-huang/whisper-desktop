@@ -10,11 +10,26 @@ function App() {
 
   async function startWebUI() {
     const resourcePath = await resolveResource("Whisper-WebUI/start-webui.sh");
-    const result = Command.create()
-    console.log("脚本执行成功:", result.stdout);
+    const command = Command.create("sh", [resourcePath]);
+    command.on("close", (data) => {
+      console.log(
+        `command finished with code ${data.code} and signal ${data.signal}`
+      );
+    });
+    command.on("error", (error) => console.error(`command error: "${error}"`));
+    command.stdout.on("data", (line) =>
+      console.log(`command stdout: "${line}"`)
+    );
+    command.stderr.on("data", (line) =>
+      console.log(`command stderr: "${line}"`)
+    );
+    const child = await command.spawn();
+    console.log("pid:", child.pid);
   }
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    startWebUI();
+  }, []);
 
   return (
     <>
