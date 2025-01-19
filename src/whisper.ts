@@ -15,9 +15,18 @@ export class Whisper {
     const whisperPath = await resolveResource("Whisper-WebUI");
     const command = Command.create(
       "sh",
-      ["./start-webui.sh", "--inbrowser", "false", "--server_port", this.port.toString()],
+      [
+        "./start-webui.sh",
+        "--inbrowser",
+        "false",
+        "--server_port",
+        this.port.toString(),
+      ],
       {
         cwd: whisperPath,
+        env: {
+          PYTHONUNBUFFERED: "1",
+        },
       }
     );
     command.on("close", (data) => {
@@ -26,12 +35,15 @@ export class Whisper {
       );
     });
     command.on("error", (error) => console.error(`command error: "${error}"`));
-    command.stdout.on("data", (line) =>
-      console.log(`command stdout: "${line}"`)
-    );
-    command.stderr.on("data", (line) =>
-      console.log(`command stderr: "${line}"`)
-    );
+    command.stdout.on("data", (line) => {
+      console.log(`command stdout: "${line}"`);
+      if (line.includes("Running on local URL")) {
+        
+      }
+    });
+    command.stderr.on("data", (line) => {
+      console.log(`command stderr: "${line}"`);
+    });
     if (this.isStop) {
       return;
     }
