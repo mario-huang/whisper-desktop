@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import { resolveResource } from "@tauri-apps/api/path";
+import { join, resolveResource } from "@tauri-apps/api/path";
 import { Command } from "@tauri-apps/plugin-shell";
 
 function App() {
   const [count, setCount] = useState(0);
 
   async function startWebUI() {
-    const resourcePath = await resolveResource("Whisper-WebUI/start-webui.sh");
-    const command = Command.create("sh", [resourcePath]);
+    const whisperPath = await resolveResource("Whisper-WebUI");
+    const command = Command.create("sh", ["./start-webui.sh"], {
+      cwd: whisperPath,
+    });
     command.on("close", (data) => {
       console.log(
         `command finished with code ${data.code} and signal ${data.signal}`
