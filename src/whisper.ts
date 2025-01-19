@@ -7,11 +7,10 @@ import { UnlistenFn } from "@tauri-apps/api/event";
 
 export class Whisper {
   port: number | null = null;
+  isStop = false;
   unlistenCloseRequested: UnlistenFn | null = null;
 
   async start() {
-    await this.stop();
-
     this.port = await this.getPort();
     const whisperPath = await resolveResource("Whisper-WebUI");
     const command = Command.create(
@@ -33,6 +32,9 @@ export class Whisper {
     command.stderr.on("data", (line) =>
       console.log(`command stderr: "${line}"`)
     );
+    if (this.isStop) {
+      return;
+    }
     await command.spawn();
     console.log(`Whisper started successfully on port ${this.port}.`);
 
@@ -40,6 +42,7 @@ export class Whisper {
   }
 
   async stop() {
+    this.isStop = true;
     if (this.port === null) {
       return;
     }
