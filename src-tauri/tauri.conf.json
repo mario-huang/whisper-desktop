@@ -3,9 +3,6 @@
   "productName": "whisper-desktop",
   "version": "0.1.0",
   "identifier": "com.whisper-desktop.app",
-  "build": {
-    "frontendDist": "../src"
-  },
   "app": {
     "withGlobalTauri": true,
     "windows": [
@@ -28,6 +25,7 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": ["../Whisper-WebUI"]
   }
 }
