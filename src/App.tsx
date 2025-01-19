@@ -1,14 +1,20 @@
-import { useEffect, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import "./App.css";
+import { resolveResource } from "@tauri-apps/api/path";
+import { Command } from "@tauri-apps/plugin-shell";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
-  useEffect(() => {
-    
-  }, [])
+  async function startWebUI() {
+    const resourcePath = await resolveResource("Whisper-WebUI/start-webui.sh");
+    const result = Command.create()
+    console.log("脚本执行成功:", result.stdout);
+  }
+
+  useEffect(() => {}, []);
 
   return (
     <>
@@ -33,7 +39,7 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
