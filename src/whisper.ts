@@ -6,10 +6,12 @@ import { invoke } from "@tauri-apps/api/core";
 import { UnlistenFn } from "@tauri-apps/api/event";
 
 export class Whisper {
-  port = 0;
+  port: number | null = null;
   unlistenCloseRequested: UnlistenFn | null = null;
 
   async start() {
+    await this.stop();
+
     this.port = await this.getPort();
     const whisperPath = await resolveResource("Whisper-WebUI");
     const command = Command.create(
@@ -32,12 +34,15 @@ export class Whisper {
       console.log(`command stderr: "${line}"`)
     );
     await command.spawn();
-    console.log("Whisper started successfully.");
+    console.log(`Whisper started successfully on port ${this.port}.`);
 
     await this.subscribeCloseRequested();
   }
 
   async stop() {
+    if (this.port === null) {
+      return;
+    }
     const pid = await this.getPid(this.port);
     let killCommand: Command<string>;
     if (pid) {
@@ -47,9 +52,9 @@ export class Whisper {
         killCommand = Command.create("kill", pid);
       }
       await killCommand.execute();
-      console.log(`Whisper has been killed`);
+      console.log(`Whisper has been killed on port ${this.port}.`);
     }
-    
+
     this.unsubscribeCloseRequested();
   }
 
@@ -76,12 +81,14 @@ export class Whisper {
   }
 
   async subscribeCloseRequested() {
-    const appWindow = getCurrentWindow()
-    this.unlistenCloseRequested = await appWindow.onCloseRequested(async (event) => {
-      event.preventDefault();
-      await this.stop();
-      appWindow.close();
-    });
+    const appWindow = getCurrentWindow();
+    this.unlistenCloseRequested = await appWindow.onCloseRequested(
+      async (event) => {
+        event.preventDefault();
+        await this.stop();
+        appWindow.close();
+      }
+    );
   }
 
   unsubscribeCloseRequested() {
