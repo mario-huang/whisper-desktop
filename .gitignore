@@ -1,4 +1,6 @@
 Whisper-WebUI
+*.lock
+*-lock.json
 
 # Logs
 logs
