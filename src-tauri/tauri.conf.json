@@ -32,7 +32,7 @@
       "icons/icon.ico"
     ],
     "resources": {
-      "../Whisper-WebUI/": "Whisper-WebUI/"
+      "../Whisper-WebUI": "Whisper-WebUI"
     }
   }
 }
