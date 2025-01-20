@@ -44,7 +44,7 @@ export function useWhisper() {
     command.stdout.on("data", (line) => {
       console.log(`command stdout: "${line}"`);
       if (line.includes(serverName)) {
-        window.location.replace(`http://${serverName}:${port}`);
+        // window.location.replace(`http://${serverName}:${port}`);
       }
     });
     command.stderr.on("data", (line) => {
