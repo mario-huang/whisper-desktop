@@ -1,16 +1,9 @@
-import { useEffect } from "react";
 import "./App.css";
-import { Whisper } from "./whisper";
+import { useWhisper } from "./whisper";
 
 function App() {
 
-  useEffect(() => {
-    const whisper = new Whisper();
-    whisper.start();
-    return () => {
-      whisper.stop();
-    };
-  }, []);
+  useWhisper();
 
   return (
     <>
