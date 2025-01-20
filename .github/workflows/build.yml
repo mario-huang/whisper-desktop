@@ -1,0 +1,53 @@
+name: build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Checkout own repository
+        uses: actions/checkout@v4
+
+      - name: Download Whisper-WebUI
+        run: |
+          curl -L -o Whisper-WebUI-master.zip https://github.com/jhj0517/Whisper-WebUI/archive/refs/heads/master.zip
+          unzip ./Whisper-WebUI-master.zip
+          rm -rf ./Whisper-WebUI
+          mv ./Whisper-WebUI-master ./Whisper-WebUI
+          rm ./Whisper-WebUI-master.zip
+
+      - name: Install dependencies
+        run: |
+          
+          cd ./Whisper-WebUI
+          sed -i '' 's|^\(--extra-index-url.*\)|# \1|' requirements.txt
+          chmod +x ./Install.sh
+          ./Install.sh
+
+      - name: Build bundle
+        run: |
+          cd ./Whisper-WebUI
+          sed -i '' 's|^\(--extra-index-url.*\)|# \1|' requirements.txt
+          chmod +x ./Install.sh
+          ./Install.sh
+          rm -rf ./.gitignore
+
+      - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "Mario"
+          git config --global user.email "6395323+mario-huang@users.noreply.github.com"
+          git add .
+          git commit -m "Add build artifacts from Whisper-WebUI"
+          git push origin main
