@@ -19,20 +19,10 @@ jobs:
       - name: Checkout own repository
         uses: actions/checkout@v4
 
-      - name: Build (macOS)
-        if: startsWith(matrix.os, 'macos')
+      - name: Build
+        shell: bash
         run: |
-          ./build/mac.sh
-
-      - name: Build (Ubuntu)
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          ./build/ubuntu.sh
-
-      - name: Build (Windows)
-        if: startsWith(matrix.os, 'windows')
-        run: |
-          .\build\windows.bat
+          ./build.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
