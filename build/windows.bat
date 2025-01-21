@@ -1,22 +1,9 @@
 @echo off
 
-echo Running npm install...
-npm install
-
-echo Changing directory to src-tauri...
-cd .\src-tauri
-
-echo Running cargo build...
-cargo build
-
-echo Changing directory to Whisper-WebUI...
-cd ..\Whisper-WebUI
-
-echo Running Install.bat...
-.\Install.bat
-
-echo Changing directory to root...
-cd ..\
-
-echo Running npm run tauri build...
-npm run tauri build
+call npm install
+call cd .\src-tauri
+call cargo build
+call cd ..\Whisper-WebUI
+call .\Install.bat
+call cd ..\
+call npm run tauri build
