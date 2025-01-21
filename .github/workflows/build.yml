@@ -25,18 +25,6 @@ jobs:
           repository: jhj0517/Whisper-WebUI
           path: Whisper-WebUI
 
-      - name: Build
-        run: |
-          if [[ "${{ matrix.os }}" == macos* ]]; then
-            chmod +x ./build/mac.sh
-            ./build/mac.sh
-          elif [[ "${{ matrix.os }}" == ubuntu* ]]; then
-            chmod +x ./build/ubuntu.sh
-            ./build/ubuntu.sh
-          else
-            ./build/windows.bat
-          fi
-
       - name: Build (macOS)
         if: startsWith(matrix.os, 'macos')
         run: |
