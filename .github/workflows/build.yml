@@ -37,6 +37,23 @@ jobs:
             ./build/windows.bat
           fi
 
+      - name: Build (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          chmod +x ./build/mac.sh
+          ./build/mac.sh
+
+      - name: Build (Ubuntu)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          chmod +x ./build/ubuntu.sh
+          ./build/ubuntu.sh
+
+      - name: Build (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          .\build\windows.bat
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
