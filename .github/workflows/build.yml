@@ -19,13 +19,10 @@ jobs:
       - name: Checkout own repository
         uses: actions/checkout@v4
 
-      - name: Download Whisper-WebUI
-        run: |
-          curl -L -o Whisper-WebUI-master.zip https://github.com/jhj0517/Whisper-WebUI/archive/refs/heads/master.zip
-          unzip ./Whisper-WebUI-master.zip
-          rm -rf ./Whisper-WebUI
-          mv ./Whisper-WebUI-master ./Whisper-WebUI
-          rm ./Whisper-WebUI-master.zip
+      - name: Checkout Whisper-WebUI repository
+        uses: actions/checkout@v4
+        with:
+          repository: jhj0517/Whisper-WebUI
 
       - name: Install node dependencies
         run: |
