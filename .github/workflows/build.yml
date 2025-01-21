@@ -25,9 +25,18 @@ jobs:
           repository: jhj0517/Whisper-WebUI
           path: Whisper-WebUI
 
-      - name: Install node dependencies
+      - name: Build
         run: |
-          npm install
+          cd ./build
+          if [[ "${{ matrix.os }}" == macos* ]]; then
+            chmod +x ./mac.sh
+            ./mac.sh
+          elif [[ "${{ matrix.os }}" == ubuntu* ]]; then
+            chmod +x ./ubuntu.sh
+            ./ubuntu.sh
+          else
+            ./windows.bat
+          fi
 
       - name: Install tauri dependencies
         run: |
