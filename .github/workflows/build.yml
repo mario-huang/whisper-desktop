@@ -7,16 +7,15 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-13, macos-14, ubuntu-24.04, ubuntu-24.04-arm, windows-2022]
+
     permissions:
       contents: write
 
     steps:
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Checkout own repository
         uses: actions/checkout@v4
 
@@ -28,7 +27,7 @@ jobs:
           mv ./Whisper-WebUI-master ./Whisper-WebUI
           rm ./Whisper-WebUI-master.zip
 
-      - name: Install vite dependencies
+      - name: Install node dependencies
         run: |
           npm install
 
@@ -40,16 +39,43 @@ jobs:
       - name: Install whisper dependencies
         run: |
           cd ./Whisper-WebUI
-          sed -i '' 's|^\(--extra-index-url.*\)|# \1|' requirements.txt
-          chmod +x ./Install.sh
-          ./Install.sh
+          if [[ "${{ matrix.os }}" == macos* ]]; then
+            sed -i '' 's|^\(--extra-index-url.*\)|# \1|' requirements.txt
+          fi
+          if [[ "${{ matrix.os }}" == windows* ]]; then
+            ./Install.bat
+          else
+            chmod +x ./Install.sh
+            ./Install.sh
+          fi
 
       - name: Build bundle
         run: |
-          npm run tauri build -- --bundles dmg
+          npm run tauri build
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            ./src-tauri/target/release/bundle/dmg/*.dmg
+          path: ./src-tauri/target/release/bundle/**/*
+
+  # release:
+  #   runs-on: ubuntu-24.04
+  #   needs: build
+  #   permissions:
+  #     contents: write
+
+  #   steps:
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: ./artifacts
+
+  #     - name: Create Release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #         files: |
+  #           ./artifacts/macos-13-bundle/*.dmg
+  #           ./artifacts/macos-14-bundle/*.dmg
+  #           ./artifacts/ubuntu-24.04-bundle/*.deb
+  #           ./artifacts/ubuntu-24.04-arm-bundle/*.deb
+  #           ./artifacts/windows-2022-bundle/*.msi
