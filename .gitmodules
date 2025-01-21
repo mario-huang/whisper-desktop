@@ -1,0 +1,3 @@
+[submodule "Whisper-WebUI"]
+	path = Whisper-WebUI
+	url = git@github.com:mario-huang/Whisper-WebUI.git
