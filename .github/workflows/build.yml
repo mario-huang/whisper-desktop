@@ -26,6 +26,8 @@ jobs:
 
       - name: Build
         shell: bash
+        env:
+          MATRIX_OS: ${{ matrix.os }}
         run: |
           ./build.sh
 
