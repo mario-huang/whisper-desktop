@@ -19,22 +19,14 @@ jobs:
       - name: Checkout own repository
         uses: actions/checkout@v4
 
-      - name: Checkout Whisper-WebUI repository
-        uses: actions/checkout@v4
-        with:
-          repository: jhj0517/Whisper-WebUI
-          path: Whisper-WebUI
-
       - name: Build (macOS)
         if: startsWith(matrix.os, 'macos')
         run: |
-          chmod +x ./build/mac.sh
           ./build/mac.sh
 
       - name: Build (Ubuntu)
         if: startsWith(matrix.os, 'ubuntu')
         run: |
-          chmod +x ./build/ubuntu.sh
           ./build/ubuntu.sh
 
       - name: Build (Windows)

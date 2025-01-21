@@ -1,13 +1,6 @@
 #!/bin/bash
 
 npm install
-
-cd ./src-tauri
-cargo build
-
-cd ../Whisper-WebUI
-chmod +x ./Install.sh
-./Install.sh
-
-cd ../
+cargo ./src-tauri/build
+./Whisper-WebUI/Install.sh
 npm run tauri build
