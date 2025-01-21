@@ -1,7 +1,7 @@
 #!/bin/bash
 
-apt update
-apt install -y libwebkit2gtk-4.1-dev \
+sudo apt update
+sudo apt install -y libwebkit2gtk-4.1-dev \
   build-essential \
   curl \
   wget \
@@ -11,4 +11,4 @@ apt install -y libwebkit2gtk-4.1-dev \
   libayatana-appindicator3-dev \
   librsvg2-dev
 
-./mac.sh
+./build/mac.sh
