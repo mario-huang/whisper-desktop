@@ -27,38 +27,15 @@ jobs:
 
       - name: Build
         run: |
-          cd ./build
           if [[ "${{ matrix.os }}" == macos* ]]; then
-            chmod +x ./mac.sh
-            ./mac.sh
+            chmod +x ./build/mac.sh
+            ./build/mac.sh
           elif [[ "${{ matrix.os }}" == ubuntu* ]]; then
-            chmod +x ./ubuntu.sh
-            ./ubuntu.sh
+            chmod +x ./build/ubuntu.sh
+            ./build/ubuntu.sh
           else
-            ./windows.bat
+            ./build/windows.bat
           fi
-
-      - name: Install tauri dependencies
-        run: |
-          cd ./src-tauri
-          cargo build
-
-      - name: Install whisper dependencies
-        run: |
-          cd ./Whisper-WebUI
-          if [[ "${{ matrix.os }}" == macos* ]]; then
-            sed -i '' 's|^\(--extra-index-url.*\)|# \1|' requirements.txt
-          fi
-          if [[ "${{ matrix.os }}" == windows* ]]; then
-            ./Install.bat
-          else
-            chmod +x ./Install.sh
-            ./Install.sh
-          fi
-
-      - name: Build bundle
-        run: |
-          npm run tauri build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

@@ -20,6 +20,5 @@ cd ../Whisper-WebUI
 chmod +x ./Install.sh
 ./Install.sh
 
+cd ../
 npm run tauri build
-
-
