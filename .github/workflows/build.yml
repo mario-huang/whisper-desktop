@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13, macos-14, ubuntu-24.04, ubuntu-24.04-arm, windows-2022]
+        os: [macos-15, ubuntu-24.04, windows-2025]
 
     permissions:
       contents: write
