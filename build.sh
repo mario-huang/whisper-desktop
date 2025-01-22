@@ -21,8 +21,6 @@ cargo build
 cd ../Whisper-WebUI
 if [[ "$MATRIX_OS" == macos-* ]]; then
   sed -i '' 's|^\(--extra-index-url.*\)|# \1|' requirements.txt
-# elif [[ "$MATRIX_OS" == *-arm ]]; then
-#   sed -i 's|^\(--extra-index-url.*\)|# \1|' requirements.txt
 fi
 ./Install.sh
 

@@ -23,6 +23,8 @@ jobs:
 
       - name: Checkout own repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Build
         shell: bash
@@ -40,7 +42,8 @@ jobs:
             ./src-tauri/target/release/bundle/deb/
             ./src-tauri/target/release/bundle/rpm/
             ./src-tauri/target/release/bundle/appimage/
-
+            ./src-tauri/target/release/bundle/msi/
+            ./src-tauri/target/release/bundle/nsis/
 
   # release:
   #   runs-on: ubuntu-24.04
