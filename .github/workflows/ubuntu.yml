@@ -1,16 +1,11 @@
 name: build
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-15, ubuntu-24.04, windows-2025]
+    runs-on: ubuntu-24.04
 
     permissions:
       contents: write
@@ -19,50 +14,35 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.10"
 
       - name: Checkout own repository
         uses: actions/checkout@v4
         with:
           submodules: true
 
-      - name: Build
-        shell: bash
-        env:
-          MATRIX_OS: ${{ matrix.os }}
+      - name: Install node dependencies
         run: |
-          ./build.sh
+          npm install
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Install tauri dependencies
+        run: |
+          cd ./src-tauri
+          cargo build
+
+      - name: Install python
+        run: |
+          cd ./Whisper-WebUI
+          python -m venv venv
+
+      - name: Build app
+        run: |
+          npm run tauri build
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: ${{ matrix.os }}-bundle
-          path: |
-            ./src-tauri/target/release/bundle/dmg/
-            ./src-tauri/target/release/bundle/deb/
-            ./src-tauri/target/release/bundle/rpm/
-            ./src-tauri/target/release/bundle/appimage/
-            ./src-tauri/target/release/bundle/msi/
-            ./src-tauri/target/release/bundle/nsis/
-
-  # release:
-  #   runs-on: ubuntu-24.04
-  #   needs: build
-  #   permissions:
-  #     contents: write
-
-  #   steps:
-  #     - name: Download artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: ./artifacts
-
-  #     - name: Create Release
-  #       uses: softprops/action-gh-release@v2
-  #       with:
-  #         files: |
-  #           ./artifacts/macos-13-bundle/*.dmg
-  #           ./artifacts/macos-14-bundle/*.dmg
-  #           ./artifacts/ubuntu-24.04-bundle/*.deb
-  #           ./artifacts/ubuntu-24.04-arm-bundle/*.deb
-  #           ./artifacts/windows-2022-bundle/*.msi
+          files: |
+            ./src-tauri/target/release/bundle/deb/*.deb
+            ./src-tauri/target/release/bundle/rpm/*.rpm
+            ./src-tauri/target/release/bundle/appimage/*.AppImage
