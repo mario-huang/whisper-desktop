@@ -45,6 +45,7 @@
     "opener:default",
     "shell:default",
     "shell:allow-kill",
-    "os:default"
+    "os:default",
+    "store:default"
   ]
 }
