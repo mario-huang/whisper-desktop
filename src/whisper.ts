@@ -6,6 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
 // import { UnlistenFn } from "@tauri-apps/api/event";
 import { useRef } from "react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export function useWhisper() {
   const isRunningRef = useRef(false);
@@ -40,18 +41,21 @@ export function useWhisper() {
         `command finished with code ${data.code} and signal ${data.signal}`
       );
     });
-    command.on("error", (error) => console.error(`command error: "${error}"`));
+    command.on("error", (error) => {
+      console.error(`command error: "${error}"`)
+      toast.error(error);
+    });
     command.stdout.on("data", (line) => {
       console.log(`command stdout: "${line}"`);
       if (line.includes(serverName)) {
-        window.location.replace(`http://${serverName}:${port}`);
+        // window.location.replace(`http://${serverName}:${port}`);
       }
     });
     command.stderr.on("data", (line) => {
       console.log(`command stderr: "${line}"`);
+      toast.error(line);
     });
     await command.spawn();
-    console.log(`Whisper started successfully on port ${port}.`);
   }
 
   // async function stop() {
