@@ -7,6 +7,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useRef } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { LazyStore } from "@tauri-apps/plugin-store";
 
 export function useWhisper() {
   const isRunningRef = useRef(false);
@@ -14,7 +15,23 @@ export function useWhisper() {
   // let unlistenCloseRequested: UnlistenFn | null = null;
   let port = 0;
 
+  useEffect(() => {
+    if (isRunningRef.current) {
+      return;
+    }
+    isRunningRef.current = true;
+    start();
+  }, []);
+
   async function start() {
+    const store = new LazyStore("store.json");
+    const isiDependenciesInstalled = await store.get(
+      "isiDependenciesInstalled"
+    );
+    if (!isiDependenciesInstalled) {
+      await installDependencies();
+      await store.set("isiDependenciesInstalled", true);
+    }
     port = await getPort();
     const whisperPath = await resolveResource("Whisper-WebUI");
     const serverName = "localhost";
@@ -42,7 +59,7 @@ export function useWhisper() {
       );
     });
     command.on("error", (error) => {
-      console.error(`command error: "${error}"`)
+      console.error(`command error: "${error}"`);
       toast.error(error);
     });
     command.stdout.on("data", (line) => {
@@ -111,11 +128,30 @@ export function useWhisper() {
   //   }
   // }
 
-  useEffect(() => {
-    if (isRunningRef.current) {
-      return;
-    }
-    isRunningRef.current = true;
-    start();
-  }, []);
+  async function installDependencies() {
+    const whisperPath = await resolveResource("Whisper-WebUI");
+    const command = Command.create("sh", ["./install-dependencies-macos.sh"], {
+      cwd: whisperPath,
+      env: {
+        PYTHONUNBUFFERED: "1",
+      },
+    });
+    command.on("close", (data) => {
+      console.log(
+        `command finished with code ${data.code} and signal ${data.signal}`
+      );
+    });
+    command.on("error", (error) => {
+      console.error(`command error: "${error}"`);
+      toast.error(error);
+    });
+    command.stdout.on("data", (line) => {
+      console.log(`command stdout: "${line}"`);
+    });
+    command.stderr.on("data", (line) => {
+      console.log(`command stderr: "${line}"`);
+      toast.error(line);
+    });
+    await command.spawn();
+  }
 }
