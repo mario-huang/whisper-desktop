@@ -34,12 +34,17 @@ export function useWhisper() {
     const isVenvExists = await exists(venvPath);
     if (!isVenvExists || !isiDependenciesInstalled) {
       console.log("Installing Whisper dependencies...");
-      setInfo("Installing Whisper dependencies...");
+      setInfo(
+        "Installing Whisper dependencies.\nThis will take a few minutes."
+      );
       await installDependencies();
       await store.set("isiDependenciesInstalled", true);
       console.log("Whisper dependencies installed.");
+      setInfo("Whisper will start in a few minutes.");
+    } else {
+      setInfo("Whisper will start in a few seconds.");
     }
-    setInfo("Whisper is starting...");
+
     port = await getPort();
     const whisperPath = await resolveResource("Whisper-WebUI");
     const serverName = "localhost";
