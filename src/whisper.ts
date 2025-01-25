@@ -1,16 +1,18 @@
-import { resolveResource } from "@tauri-apps/api/path";
+import { BaseDirectory, resolveResource } from "@tauri-apps/api/path";
+import { exists } from "@tauri-apps/plugin-fs";
 import { Command } from "@tauri-apps/plugin-shell";
 // import { getCurrentWindow } from "@tauri-apps/api/window";
 // import { family } from "@tauri-apps/plugin-os";
 import { invoke } from "@tauri-apps/api/core";
 // import { UnlistenFn } from "@tauri-apps/api/event";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { LazyStore } from "@tauri-apps/plugin-store";
 
 export function useWhisper() {
   const isRunningRef = useRef(false);
+  const [info, setInfo] = useState("");
   // const appWindow = getCurrentWindow();
   // let unlistenCloseRequested: UnlistenFn | null = null;
   let port = 0;
@@ -28,10 +30,16 @@ export function useWhisper() {
     const isiDependenciesInstalled = await store.get(
       "isiDependenciesInstalled"
     );
-    if (!isiDependenciesInstalled) {
+    const venvPath = await resolveResource("Whisper-WebUI/venv");
+    const isVenvExists = await exists(venvPath);
+    if (!isVenvExists || !isiDependenciesInstalled) {
+      console.log("Installing Whisper dependencies...");
+      setInfo("Installing Whisper dependencies...");
       await installDependencies();
       await store.set("isiDependenciesInstalled", true);
+      console.log("Whisper dependencies installed.");
     }
+    setInfo("Whisper is starting...");
     port = await getPort();
     const whisperPath = await resolveResource("Whisper-WebUI");
     const serverName = "localhost";
@@ -65,6 +73,7 @@ export function useWhisper() {
     command.stdout.on("data", (line) => {
       console.log(`command stdout: "${line}"`);
       if (line.includes(serverName)) {
+        toast.success(`Whisper is running on port ${port}.`);
         // window.location.replace(`http://${serverName}:${port}`);
       }
     });
@@ -152,6 +161,8 @@ export function useWhisper() {
       console.log(`command stderr: "${line}"`);
       toast.error(line);
     });
-    await command.spawn();
+    await command.execute();
   }
+
+  return info;
 }

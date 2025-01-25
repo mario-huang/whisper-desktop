@@ -38,6 +38,27 @@
           "name": "kill",
           "cmd": "kill",
           "args": true
+        },
+        {
+          "name": "sh",
+          "cmd": "sh",
+          "args": true
+        }
+      ]
+    },
+    {
+      "identifier": "fs:read-all",
+      "allow": [
+        {
+          "path": "$HOME/**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:write-all",
+      "allow": [
+        {
+          "path": "$HOME/**"
         }
       ]
     },
@@ -46,6 +67,7 @@
     "shell:default",
     "shell:allow-kill",
     "os:default",
-    "store:default"
+    "store:default",
+    "fs:default"
   ]
 }
