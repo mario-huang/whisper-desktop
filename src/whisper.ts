@@ -9,7 +9,7 @@ import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { LazyStore } from "@tauri-apps/plugin-store";
-import { platform } from "@tauri-apps/plugin-os";
+import { family, platform } from "@tauri-apps/plugin-os";
 import { getVersion } from "@tauri-apps/api/app";
 
 export function useWhisper() {
@@ -84,7 +84,7 @@ export function useWhisper() {
       }
     });
     command.stderr.on("data", (line) => {
-      console.log(`command stderr: "${line}"`);
+      console.error(`command stderr: "${line}"`);
       toast.error(line);
     });
     await command.spawn();
@@ -146,6 +146,9 @@ export function useWhisper() {
   async function installDependencies() {
     const whisperPath = await resolveResource("Whisper-WebUI");
     const currentPlatform = platform();
+    const osType = family();
+    console.log(`currentPlatform: ${currentPlatform}`);
+    console.log(`osType: ${osType}`);
     const command = Command.create(
       "bash",
       [`./install-dependencies-${currentPlatform}.sh`],
@@ -169,7 +172,7 @@ export function useWhisper() {
       console.log(`command stdout: "${line}"`);
     });
     command.stderr.on("data", (line) => {
-      console.log(`command stderr: "${line}"`);
+      console.error(`command stderr: "${line}"`);
       toast.error(line);
     });
     await command.execute();
