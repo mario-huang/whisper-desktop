@@ -34,6 +34,6 @@ jobs:
         with:
           tag_name: ${{ github.run_id }}
           files: |
-            ./src-tauri/target/release/bundle/deb/*.deb
-            ./src-tauri/target/release/bundle/rpm/*.rpm
-            ./src-tauri/target/release/bundle/appimage/*.AppImage
+            ./src-tauri/target/**/bundle/deb/*.deb
+            ./src-tauri/target/**/bundle/rpm/*.rpm
+            ./src-tauri/target/**/bundle/appimage/*.AppImage
