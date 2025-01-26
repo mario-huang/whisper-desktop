@@ -46,28 +46,16 @@
         }
       ]
     },
-    {
-      "identifier": "fs:read-all",
-      "allow": [
-        {
-          "path": "$HOME/**"
-        }
-      ]
-    },
-    {
-      "identifier": "fs:write-all",
-      "allow": [
-        {
-          "path": "$HOME/**"
-        }
-      ]
-    },
     "core:default",
     "opener:default",
     "shell:default",
     "shell:allow-kill",
     "os:default",
     "store:default",
-    "fs:default"
+    "fs:default",
+    "fs:allow-desktop-read-recursive",
+    "fs:allow-desktop-meta-recursive",
+    "fs:allow-resource-read-recursive",
+    "fs:allow-resource-meta-recursive"
   ]
 }
