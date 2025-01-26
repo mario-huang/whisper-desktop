@@ -1,4 +1,4 @@
-import { BaseDirectory, resolveResource } from "@tauri-apps/api/path";
+import { resolveResource } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { Command } from "@tauri-apps/plugin-shell";
 // import { getCurrentWindow } from "@tauri-apps/api/window";
