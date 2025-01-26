@@ -9,7 +9,7 @@ import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { LazyStore } from "@tauri-apps/plugin-store";
-import { family, platform } from "@tauri-apps/plugin-os";
+import { type } from "@tauri-apps/plugin-os";
 import { getVersion } from "@tauri-apps/api/app";
 
 export function useWhisper() {
@@ -145,13 +145,11 @@ export function useWhisper() {
 
   async function installDependencies() {
     const whisperPath = await resolveResource("Whisper-WebUI");
-    const currentPlatform = platform();
-    const osType = family();
-    console.log(`currentPlatform: ${currentPlatform}`);
+    const osType = type();
     console.log(`osType: ${osType}`);
     const command = Command.create(
       "bash",
-      [`./install-dependencies-${currentPlatform}.sh`],
+      [`./install-dependencies-${osType}.sh`],
       {
         cwd: whisperPath,
         env: {
