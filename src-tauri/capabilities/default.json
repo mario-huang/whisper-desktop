@@ -10,8 +10,8 @@
       "identifier": "shell:allow-spawn",
       "allow": [
         {
-          "name": "sh",
-          "cmd": "sh",
+          "name": "bash",
+          "cmd": "bash",
           "args": true
         }
       ]
@@ -40,8 +40,8 @@
           "args": true
         },
         {
-          "name": "sh",
-          "cmd": "sh",
+          "name": "bash",
+          "cmd": "bash",
           "args": true
         }
       ]

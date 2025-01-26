@@ -50,7 +50,7 @@ export function useWhisper() {
     const whisperPath = await resolveResource("Whisper-WebUI");
     const serverName = "localhost";
     const command = Command.create(
-      "sh",
+      "bash",
       [
         "./start-webui.sh",
         "--server_name",
@@ -146,7 +146,7 @@ export function useWhisper() {
   async function installDependencies() {
     const whisperPath = await resolveResource("Whisper-WebUI");
     const currentPlatform = platform();
-    const command = Command.create("sh", [`./install-dependencies-${currentPlatform}.sh`], {
+    const command = Command.create("bash", [`./install-dependencies-${currentPlatform}.sh`], {
       cwd: whisperPath,
       env: {
         PYTHONUNBUFFERED: "1",
