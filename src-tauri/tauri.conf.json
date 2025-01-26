@@ -18,7 +18,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' blob: data: media:; script-src 'self' 'unsafe-eval';"
+      "csp": ""
     }
   },
   "bundle": {
