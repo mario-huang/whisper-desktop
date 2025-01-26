@@ -35,3 +35,4 @@ jobs:
           tag_name: ${{ github.run_id }}
           files: |
             ./src-tauri/target/release/bundle/dmg/*.dmg
+            ./src-tauri/target/debug/bundle/dmg/*.dmg
