@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { platform } from "@tauri-apps/plugin-os";
+import { getVersion } from "@tauri-apps/api/app";
 
 export function useWhisper() {
   const isRunningRef = useRef(false);
@@ -27,10 +28,9 @@ export function useWhisper() {
   }, []);
 
   async function start() {
+    const dependenciesInstalledKey = `isiDependenciesInstalled-${await getVersion()}`;
     const store = new LazyStore("store.json");
-    const isiDependenciesInstalled = await store.get(
-      "isiDependenciesInstalled"
-    );
+    const isiDependenciesInstalled = await store.get(dependenciesInstalledKey);
     const venvPath = await resolveResource("Whisper-WebUI/venv");
     const isVenvExists = await exists(venvPath);
     if (!isVenvExists || !isiDependenciesInstalled) {
@@ -39,7 +39,7 @@ export function useWhisper() {
         "Installing Whisper dependencies.\nThis will take a few minutes."
       );
       await installDependencies();
-      await store.set("isiDependenciesInstalled", true);
+      await store.set(dependenciesInstalledKey, true);
       console.log("Whisper dependencies installed.");
       setInfo("Whisper will start in a few minutes.");
     } else {
@@ -146,12 +146,16 @@ export function useWhisper() {
   async function installDependencies() {
     const whisperPath = await resolveResource("Whisper-WebUI");
     const currentPlatform = platform();
-    const command = Command.create("bash", [`./install-dependencies-${currentPlatform}.sh`], {
-      cwd: whisperPath,
-      env: {
-        PYTHONUNBUFFERED: "1",
-      },
-    });
+    const command = Command.create(
+      "bash",
+      [`./install-dependencies-${currentPlatform}.sh`],
+      {
+        cwd: whisperPath,
+        env: {
+          PYTHONUNBUFFERED: "1",
+        },
+      }
+    );
     command.on("close", (data) => {
       console.log(
         `command finished with code ${data.code} and signal ${data.signal}`
