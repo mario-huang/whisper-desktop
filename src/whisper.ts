@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { LazyStore } from "@tauri-apps/plugin-store";
+import { platform } from "@tauri-apps/plugin-os";
 
 export function useWhisper() {
   const isRunningRef = useRef(false);
@@ -144,7 +145,8 @@ export function useWhisper() {
 
   async function installDependencies() {
     const whisperPath = await resolveResource("Whisper-WebUI");
-    const command = Command.create("sh", ["./install-dependencies-macos.sh"], {
+    const currentPlatform = platform();
+    const command = Command.create("sh", [`./install-dependencies-${currentPlatform}.sh`], {
       cwd: whisperPath,
       env: {
         PYTHONUNBUFFERED: "1",
