@@ -27,7 +27,7 @@ jobs:
 
       - name: Build app
         run: |
-          npm run tauri build -- --debug
+          npm run tauri build -- --bundles dmg --debug
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

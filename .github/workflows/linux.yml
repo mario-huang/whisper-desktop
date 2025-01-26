@@ -40,7 +40,7 @@ jobs:
 
       - name: Build app
         run: |
-          npm run tauri build
+          npm run tauri build -- --bundles deb,rpm --debug
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -49,4 +49,3 @@ jobs:
           files: |
             ./src-tauri/target/**/bundle/deb/*.deb
             ./src-tauri/target/**/bundle/rpm/*.rpm
-            ./src-tauri/target/**/bundle/appimage/*.AppImage
