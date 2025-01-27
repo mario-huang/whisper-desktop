@@ -1,27 +1,29 @@
-import { useRef, useState } from "react";
-import { useEffect } from "react";
-import { toast } from "sonner";
-
+import { app } from "electron";
+import path from "node:path";
+import axios from "axios";
+import fs from 'node:fs';
+import AdmZip from "adm-zip";
 
 export function useWhisper() {
-  const isRunningRef = useRef(false);
-  const [info, setInfo] = useState("");
-  // const appWindow = getCurrentWindow();
-  // let unlistenCloseRequested: UnlistenFn | null = null;
   let port = 0;
 
-  useEffect(() => {
-    if (isRunningRef.current) {
-      return;
-    }
-    isRunningRef.current = true;
-    start();
-  }, []);
+  async function download() {
+    const userDataPath = app.getPath("userData");
+    const whisperPath = path.join(userDataPath, "Whisper-WebUI");
+    fs.rmSync(whisperPath, { recursive: true, force: true });
+    const repoUrl =
+      "https://github.com/mario-huang/Whisper-WebUI/archive/2a9aa2a0437aa15723920669f2a50cf8ff377ddf.zip";
+    const response = await axios.get(repoUrl, { responseType: "arraybuffer" });
+    const zipPath = `${whisperPath}.zip`;
+    fs.writeFileSync(zipPath, response.data);
+    const zip = new AdmZip(zipPath);
+    zip.extractAllTo(whisperPath, true);
+  }
 
   async function start() {
-    const dependenciesInstalledKey = `isiDependenciesInstalled-${await window.electronAPI.getVersion()}`;
+    const dependenciesInstalledKey = `isiDependenciesInstalled-${await app.getVersion()}`;
     const store = new LazyStore("store.json");
-    
+    const store = new Store();
     const isiDependenciesInstalled = await store.get(dependenciesInstalledKey);
     const venvPath = await resolveResource("Whisper-WebUI/venv");
     const isVenvExists = await exists(venvPath);
