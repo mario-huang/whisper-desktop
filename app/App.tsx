@@ -3,7 +3,7 @@ import "./App.css";
 import { useWhisper } from "./whisper";
 
 function App() {
-  // const info = useWhisper();
+  useWhisper();
 
   return (
     <div className="flex flex-col gap-8 justify-center items-center h-screen text-orange-200  bg-orange-600">

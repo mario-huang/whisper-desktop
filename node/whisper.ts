@@ -10,7 +10,8 @@ import { detect } from "detect-port";
 
 export class Whisper {
   userDataPath = app.getPath("userData");
-  whisperPath = path.join(this.userDataPath, "Whisper-WebUI");
+  repository = "Whisper-WebUI";
+  whisperPath = path.join(this.userDataPath, this.repository);
 
   async start() {
     const whisperInstalledKey = `isWhisperInstalled-${app.getVersion()}`;
@@ -107,14 +108,16 @@ export class Whisper {
 
   async download() {
     fs.rmSync(this.whisperPath, { recursive: true, force: true });
-    const url =
-      "https://github.com/mario-huang/Whisper-WebUI/tree/603e4f77143e9d4e8fa9e7f8badf5b3e5f01e1bb.zip";
+    const hash = "603e4f77143e9d4e8fa9e7f8badf5b3e5f01e1bb";
+    const url = `https://github.com/mario-huang/${this.repository}/archive/${hash}.zip`;
     const response = await axios.get(url, { responseType: "arraybuffer" });
     const zipPath = `${this.whisperPath}.zip`;
     fs.writeFileSync(zipPath, response.data);
+
     const zip = new AdmZip(zipPath);
-    zip.extractAllTo(this.whisperPath, true);
-    console.log(`Whisper extracted to ${this.whisperPath}`);
+    const extractPath = `${this.whisperPath}-temp`;
+    zip.extractAllTo(extractPath, true);
+    fs.renameSync(path.join(extractPath, `${this.repository}-${hash}`), this.whisperPath);
 
     let osType = "";
     switch (os.type()) {
