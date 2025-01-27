@@ -1,12 +1,19 @@
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import Store from "electron-store";
+import { ipcRenderer } from "electron";
 
 export function useWhisper() {
   const isRunningRef = useRef(false);
   const [info, setInfo] = useState("");
 
+  ipcRenderer.on("onStartWhisper", (_, info, error) => {
+    if (error) {
+      toast.error(error);
+    } else {
+      setInfo(info);
+    }
+  });
 
   useEffect(() => {
     if (isRunningRef.current) {
@@ -19,7 +26,6 @@ export function useWhisper() {
   async function start() {
     window.electronAPI.startWhisper();
   }
-
 
   return info;
 

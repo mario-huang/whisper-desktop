@@ -13,7 +13,7 @@ export class Whisper {
   repository = "Whisper-WebUI";
   whisperPath = path.join(this.userDataPath, this.repository);
 
-  async start(on: (info: string) => void) {
+  async start(on: (info: string, error?: string) => void) {
     const whisperInstalledKey = `isWhisperInstalled-${app.getVersion()}`;
     const store = new Store();
     const isWhisperInstalled = store.get(whisperInstalledKey);
@@ -21,14 +21,17 @@ export class Whisper {
     if (!isWhisperExists || !isWhisperInstalled) {
       try {
         console.log("Downloading Whisper...");
-        on("Downloading Whisper...");
+        on("Installing Whisper dependencies.\nThis will take a few minutes.");
         await this.download();
         store.set(whisperInstalledKey, true);
         console.log("Whisper downloaded.");
+        on("Whisper will start in a few minutes.");
       } catch (error) {
         console.error(`Error downloading Whisper: ${error}`);
+        on("", "Something went wrong while downloading Whisper.");
       }
     } else {
+      on("Whisper will start in a few seconds.");
     }
 
     // port = await getPort();

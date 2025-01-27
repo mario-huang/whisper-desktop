@@ -65,7 +65,7 @@ async function handleGetVersion() {
 
 async function handleStartWhisper() {
   const whisper = new Whisper();
-  await whisper.start((info) => {
-    mainWindow?.webContents.send('onStartWhisper', info);
+  await whisper.start((info, error) => {
+    mainWindow?.webContents.send('onStartWhisper', info, error);
   });
 }
