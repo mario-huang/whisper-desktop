@@ -5,13 +5,7 @@ import fs from "node:fs";
 import AdmZip from "adm-zip";
 import Store from "electron-store";
 import os from "node:os";
-import {
-  execFile,
-  execFileSync,
-  execSync,
-  spawn,
-  spawnSync,
-} from "node:child_process";
+import { spawn } from "node:child_process";
 import { detect } from "detect-port";
 
 export class Whisper {
@@ -19,7 +13,7 @@ export class Whisper {
   repository = "Whisper-WebUI";
   whisperPath = path.join(this.userDataPath, this.repository);
 
-  async start() {
+  async start(on: (info: string) => void) {
     const whisperInstalledKey = `isWhisperInstalled-${app.getVersion()}`;
     const store = new Store();
     const isWhisperInstalled = store.get(whisperInstalledKey);
@@ -27,6 +21,7 @@ export class Whisper {
     if (!isWhisperExists || !isWhisperInstalled) {
       try {
         console.log("Downloading Whisper...");
+        on("Downloading Whisper...");
         await this.download();
         store.set(whisperInstalledKey, true);
         console.log("Whisper downloaded.");
@@ -118,7 +113,7 @@ export class Whisper {
 
   async download() {
     fs.rmSync(this.whisperPath, { recursive: true, force: true });
-    const hash = "603e4f77143e9d4e8fa9e7f8badf5b3e5f01e1bb";
+    const hash = "7643633ab0250bf42e0e03e2b3335c84971f6962";
     const url = `https://github.com/mario-huang/${this.repository}/archive/${hash}.zip`;
     const response = await axios.get(url, { responseType: "arraybuffer" });
     const zipPath = `${this.whisperPath}.zip`;
@@ -154,23 +149,28 @@ export class Whisper {
         ...process.env,
         PYTHONUNBUFFERED: "1",
       },
-    })
+    });
 
-    child.stdout.on('data', (data) => {
-      console.log(`[stdout]: ${data}`);
-    });
-    
-    child.stderr.on('data', (data) => {
-      console.error(`[stderr]: ${data}`);
-    });
-    
-    child.on('close', (code) => {
-      console.log(`Script exited with code ${code}`);
-      if (code === 0) {
-        console.log('Script executed successfully!');
-      } else {
-        console.error('Script execution failed!');
-      }
+    return new Promise((resolve, reject) => {
+      child.stdout.on("data", (data) => {
+        console.log(`[stdout]: ${data}`);
+      });
+
+      child.stderr.on("data", (data) => {
+        console.error(`[stderr]: ${data}`);
+        reject(data);
+      });
+
+      child.on("close", (code) => {
+        console.log(`Script exited with code ${code}`);
+        if (code === 0) {
+          console.log("Script executed successfully!");
+          resolve(code);
+        } else {
+          console.error("Script execution failed!");
+          reject(code);
+        }
+      });
     });
 
     // execFileSync(
@@ -182,17 +182,17 @@ export class Whisper {
     //       PYTHONUNBUFFERED: "1",
     //     },
     //   }
-      // (error, stdout, stderr) => {
-      //   if (error) {
-      //     console.error(`Error executing script: ${error.message}`);
-      //     return;
-      //   }
-      //   if (stderr) {
-      //     console.error(`Script stderr: ${stderr}`);
-      //     return;
-      //   }
-      //   console.log(`Script output: ${stdout}`);
-      // }
+    // (error, stdout, stderr) => {
+    //   if (error) {
+    //     console.error(`Error executing script: ${error.message}`);
+    //     return;
+    //   }
+    //   if (stderr) {
+    //     console.error(`Script stderr: ${stderr}`);
+    //     return;
+    //   }
+    //   console.log(`Script output: ${stdout}`);
+    // }
     // );
   }
 }

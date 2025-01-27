@@ -3,6 +3,8 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { Whisper } from './whisper';
 
+let mainWindow: BrowserWindow | null = null;
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
@@ -10,7 +12,7 @@ if (started) {
 
 function createWindow() {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -34,7 +36,7 @@ function createWindow() {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   ipcMain.handle('getVersion', handleGetVersion);
-  ipcMain.handle('startWhisper', handleStartWhisper);
+  ipcMain.on('startWhisper', handleStartWhisper);
   createWindow();
 });
 
@@ -63,5 +65,7 @@ async function handleGetVersion() {
 
 async function handleStartWhisper() {
   const whisper = new Whisper();
-  await whisper.start();
+  await whisper.start((info) => {
+    mainWindow?.webContents.send('onStartWhisper', info);
+  });
 }

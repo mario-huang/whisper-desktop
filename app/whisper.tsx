@@ -6,9 +6,7 @@ import Store from "electron-store";
 export function useWhisper() {
   const isRunningRef = useRef(false);
   const [info, setInfo] = useState("");
-  // const appWindow = getCurrentWindow();
-  // let unlistenCloseRequested: UnlistenFn | null = null;
-  let port = 0;
+
 
   useEffect(() => {
     if (isRunningRef.current) {
@@ -21,6 +19,9 @@ export function useWhisper() {
   async function start() {
     window.electronAPI.startWhisper();
   }
+
+
+  return info;
 
   // async function stop() {
   //   const pid = await getPid(port);
