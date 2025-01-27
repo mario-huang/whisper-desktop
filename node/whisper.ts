@@ -5,7 +5,13 @@ import fs from "node:fs";
 import AdmZip from "adm-zip";
 import Store from "electron-store";
 import os from "node:os";
-import { execFile, execFileSync, execSync } from "node:child_process";
+import {
+  execFile,
+  execFileSync,
+  execSync,
+  spawn,
+  spawnSync,
+} from "node:child_process";
 import { detect } from "detect-port";
 
 export class Whisper {
@@ -19,10 +25,14 @@ export class Whisper {
     const isWhisperInstalled = store.get(whisperInstalledKey);
     const isWhisperExists = fs.existsSync(this.whisperPath);
     if (!isWhisperExists || !isWhisperInstalled) {
-      console.log("Downloading Whisper...");
-      await this.download();
-      console.log("Whisper downloaded.");
-      store.set(whisperInstalledKey, true);
+      try {
+        console.log("Downloading Whisper...");
+        await this.download();
+        store.set(whisperInstalledKey, true);
+        console.log("Whisper downloaded.");
+      } catch (error) {
+        console.error(`Error downloading Whisper: ${error}`);
+      }
     } else {
     }
 
@@ -116,8 +126,11 @@ export class Whisper {
 
     const zip = new AdmZip(zipPath);
     const extractPath = `${this.whisperPath}-temp`;
-    zip.extractAllTo(extractPath, true);
-    fs.renameSync(path.join(extractPath, `${this.repository}-${hash}`), this.whisperPath);
+    zip.extractAllTo(extractPath, true, true);
+    fs.renameSync(
+      path.join(extractPath, `${this.repository}-${hash}`),
+      this.whisperPath
+    );
 
     let osType = "";
     switch (os.type()) {
@@ -135,12 +148,40 @@ export class Whisper {
     }
     console.log(`osType: ${osType}`);
 
-    execFileSync(
-      `./install-dependencies-${osType}.sh`,
-      {
-        cwd: this.whisperPath,
-        env: { PYTHONUNBUFFERED: "1" },
+    const child = spawn("bash", [`./install-dependencies-${osType}.sh`], {
+      cwd: this.whisperPath,
+      env: {
+        ...process.env,
+        PYTHONUNBUFFERED: "1",
+      },
+    })
+
+    child.stdout.on('data', (data) => {
+      console.log(`[stdout]: ${data}`);
+    });
+    
+    child.stderr.on('data', (data) => {
+      console.error(`[stderr]: ${data}`);
+    });
+    
+    child.on('close', (code) => {
+      console.log(`Script exited with code ${code}`);
+      if (code === 0) {
+        console.log('Script executed successfully!');
+      } else {
+        console.error('Script execution failed!');
       }
+    });
+
+    // execFileSync(
+    //   `./install-dependencies-${osType}.sh`,
+    //   {
+    //     cwd: this.whisperPath,
+    //     env: {
+    //       ...process.env,
+    //       PYTHONUNBUFFERED: "1",
+    //     },
+    //   }
       // (error, stdout, stderr) => {
       //   if (error) {
       //     console.error(`Error executing script: ${error.message}`);
@@ -152,6 +193,6 @@ export class Whisper {
       //   }
       //   console.log(`Script output: ${stdout}`);
       // }
-    );
+    // );
   }
 }
