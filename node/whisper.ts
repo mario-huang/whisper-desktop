@@ -21,8 +21,8 @@ export class Whisper {
     const isWhisperExists = fs.existsSync(this.whisperPath);
     if (!isWhisperExists || !isWhisperInstalled) {
       try {
-        console.log("Downloading Whisper...");
-        event.reply("onStartWhisper", "Installing Whisper dependencies.\nThis will take a few minutes.");
+        console.log("Downloading Whisper.");
+        event.reply("onStartWhisper", "Downloading Whisper.\nThis will take a few minutes.");
         await this.download();
         store.set(whisperInstalledKey, true);
         console.log("Whisper downloaded.");
@@ -124,7 +124,6 @@ export class Whisper {
     const response = await axios.get(url, { responseType: "arraybuffer" });
     const zipPath = `${this.whisperPath}.zip`;
     fs.writeFileSync(zipPath, response.data);
-    fs.rmSync(zipPath, { recursive: true, force: true });
 
     const zip = new AdmZip(zipPath);
     const extractPath = `${this.whisperPath}-temp`;
@@ -133,6 +132,7 @@ export class Whisper {
       path.join(extractPath, `${this.repository}-${hash}`),
       this.whisperPath
     );
+    fs.rmSync(zipPath, { recursive: true, force: true });
     fs.rmSync(extractPath, { recursive: true, force: true });
 
     let osType = "";
@@ -165,8 +165,7 @@ export class Whisper {
       });
 
       child.stderr.on("data", (data) => {
-        console.error(`[stderr]: ${data}`);
-        reject(data);
+        console.log(`[stderr]: ${data}`);
       });
 
       child.on("close", (code) => {

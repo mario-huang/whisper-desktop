@@ -1,7 +1,7 @@
 interface Window {
-    electronAPI: {
-      getVersion: () => Promise<string>;
-      startWhisper: () => Promise<void>;
-      onStartWhisper: (info: string) => void;
-    };
-  }
+  electronAPI: {
+    getVersion: () => Promise<string>;
+    startWhisper: () => Promise<void>;
+    onStartWhisper: (callback: (data: string) => void) => void;
+  };
+}
