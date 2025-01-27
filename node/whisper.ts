@@ -1,43 +1,27 @@
 import { app } from "electron";
 import path from "node:path";
 import axios from "axios";
-import fs from 'node:fs';
+import fs from "node:fs";
 import AdmZip from "adm-zip";
+import Store from "electron-store";
+import os from "node:os";
+import { execFile, execFileSync, execSync } from "node:child_process";
 
-export function useWhisper() {
-  let port = 0;
+export class Whisper {
+  userDataPath = app.getPath("userData");
+  whisperPath = path.join(this.userDataPath, "Whisper-WebUI");
 
-  async function download() {
-    const userDataPath = app.getPath("userData");
-    const whisperPath = path.join(userDataPath, "Whisper-WebUI");
-    fs.rmSync(whisperPath, { recursive: true, force: true });
-    const repoUrl =
-      "https://github.com/mario-huang/Whisper-WebUI/archive/2a9aa2a0437aa15723920669f2a50cf8ff377ddf.zip";
-    const response = await axios.get(repoUrl, { responseType: "arraybuffer" });
-    const zipPath = `${whisperPath}.zip`;
-    fs.writeFileSync(zipPath, response.data);
-    const zip = new AdmZip(zipPath);
-    zip.extractAllTo(whisperPath, true);
-  }
-
-  async function start() {
-    const dependenciesInstalledKey = `isiDependenciesInstalled-${await app.getVersion()}`;
-    const store = new LazyStore("store.json");
+  async start() {
+    const whisperInstalledKey = `isWhisperInstalled-${app.getVersion()}`;
     const store = new Store();
-    const isiDependenciesInstalled = await store.get(dependenciesInstalledKey);
-    const venvPath = await resolveResource("Whisper-WebUI/venv");
-    const isVenvExists = await exists(venvPath);
-    if (!isVenvExists || !isiDependenciesInstalled) {
-      console.log("Installing Whisper dependencies...");
-      setInfo(
-        "Installing Whisper dependencies.\nThis will take a few minutes."
-      );
-      await installDependencies();
-      await store.set(dependenciesInstalledKey, true);
-      console.log("Whisper dependencies installed.");
-      setInfo("Whisper will start in a few minutes.");
+    const isWhisperInstalled = store.get(whisperInstalledKey);
+    const isWhisperExists = fs.existsSync(this.whisperPath);
+    if (!isWhisperExists || !isWhisperInstalled) {
+      console.log("Downloading Whisper...");
+      await this.download();
+      console.log("Whisper downloaded.");
+      store.set(whisperInstalledKey, true);
     } else {
-      setInfo("Whisper will start in a few seconds.");
     }
 
     port = await getPort();
@@ -116,59 +100,53 @@ export function useWhisper() {
   //   return family() == "windows";
   // }
 
-  async function getPort(): Promise<number> {
+  async getPort(): Promise<number> {
     return invoke<number>("get_random_port");
   }
 
-  // async function subscribeCloseRequested() {
-  //   this.unlistenCloseRequested = await this.appWindow.onCloseRequested(
-  //     async (event) => {
-  //       event.preventDefault();
-  //       await this.stop();
-  //       this.appWindow.close();
-  //     }
-  //   );
-  // }
+  async download() {
+    fs.rmSync(this.whisperPath, { recursive: true, force: true });
+    const url =
+      "https://github.com/mario-huang/Whisper-WebUI/archive/2a9aa2a0437aa15723920669f2a50cf8ff377ddf.zip";
+    const response = await axios.get(url, { responseType: "arraybuffer" });
+    const zipPath = `${this.whisperPath}.zip`;
+    fs.writeFileSync(zipPath, response.data);
+    const zip = new AdmZip(zipPath);
+    zip.extractAllTo(this.whisperPath, true);
 
-  // function unsubscribeCloseRequested() {
-  //   if (this.unlistenCloseRequested) {
-  //     this.unlistenCloseRequested();
-  //     this.unlistenCloseRequested = null;
-  //   }
-  // }
-
-  async function installDependencies() {
-    const whisperPath = await resolveResource("Whisper-WebUI");
-    const osType = type();
+    let osType = "";
+    switch (os.type()) {
+      case "Linux":
+        osType = "linux";
+        break;
+      case "Darwin":
+        osType = "macos";
+        break;
+      case "Windows_NT":
+        osType = "windows";
+        break;
+      default:
+        break;
+    }
     console.log(`osType: ${osType}`);
-    const command = Command.create(
-      "bash",
-      [`./install-dependencies-${osType}.sh`],
-      {
-        cwd: whisperPath,
-        env: {
-          PYTHONUNBUFFERED: "1",
-        },
-      }
-    );
-    command.on("close", (data) => {
-      console.log(
-        `command finished with code ${data.code} and signal ${data.signal}`
-      );
-    });
-    command.on("error", (error) => {
-      console.error(`command error: "${error}"`);
-      toast.error(error);
-    });
-    command.stdout.on("data", (line) => {
-      console.log(`command stdout: "${line}"`);
-    });
-    command.stderr.on("data", (line) => {
-      console.error(`command stderr: "${line}"`);
-      toast.error(line);
-    });
-    await command.execute();
-  }
 
-  return info;
+    execFileSync(
+      `./install-dependencies-${osType}.sh`,
+      {
+        cwd: this.whisperPath,
+        env: { PYTHONUNBUFFERED: "1" },
+      }
+      // (error, stdout, stderr) => {
+      //   if (error) {
+      //     console.error(`Error executing script: ${error.message}`);
+      //     return;
+      //   }
+      //   if (stderr) {
+      //     console.error(`Script stderr: ${stderr}`);
+      //     return;
+      //   }
+      //   console.log(`Script output: ${stdout}`);
+      // }
+    );
+  }
 }
