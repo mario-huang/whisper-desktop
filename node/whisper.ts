@@ -6,6 +6,7 @@ import AdmZip from "adm-zip";
 import Store from "electron-store";
 import os from "node:os";
 import { execFile, execFileSync, execSync } from "node:child_process";
+import { detect } from "detect-port";
 
 export class Whisper {
   userDataPath = app.getPath("userData");
@@ -24,48 +25,48 @@ export class Whisper {
     } else {
     }
 
-    port = await getPort();
-    const whisperPath = await resolveResource("Whisper-WebUI");
-    const serverName = "localhost";
-    const command = Command.create(
-      "bash",
-      [
-        "./start-webui.sh",
-        "--server_name",
-        serverName,
-        "--server_port",
-        port.toString(),
-        "--inbrowser",
-        "false",
-      ],
-      {
-        cwd: whisperPath,
-        env: {
-          PYTHONUNBUFFERED: "1",
-        },
-      }
-    );
-    command.on("close", (data) => {
-      console.log(
-        `command finished with code ${data.code} and signal ${data.signal}`
-      );
-    });
-    command.on("error", (error) => {
-      console.error(`command error: "${error}"`);
-      toast.error(error);
-    });
-    command.stdout.on("data", (line) => {
-      console.log(`command stdout: "${line}"`);
-      if (line.includes(serverName)) {
-        toast.success(`Whisper is running on port ${port}.`);
-        // window.location.replace(`http://${serverName}:${port}`);
-      }
-    });
-    command.stderr.on("data", (line) => {
-      console.error(`command stderr: "${line}"`);
-      toast.error(line);
-    });
-    await command.spawn();
+    // port = await getPort();
+    // const whisperPath = await resolveResource("Whisper-WebUI");
+    // const serverName = "localhost";
+    // const command = Command.create(
+    //   "bash",
+    //   [
+    //     "./start-webui.sh",
+    //     "--server_name",
+    //     serverName,
+    //     "--server_port",
+    //     port.toString(),
+    //     "--inbrowser",
+    //     "false",
+    //   ],
+    //   {
+    //     cwd: whisperPath,
+    //     env: {
+    //       PYTHONUNBUFFERED: "1",
+    //     },
+    //   }
+    // );
+    // command.on("close", (data) => {
+    //   console.log(
+    //     `command finished with code ${data.code} and signal ${data.signal}`
+    //   );
+    // });
+    // command.on("error", (error) => {
+    //   console.error(`command error: "${error}"`);
+    //   toast.error(error);
+    // });
+    // command.stdout.on("data", (line) => {
+    //   console.log(`command stdout: "${line}"`);
+    //   if (line.includes(serverName)) {
+    //     toast.success(`Whisper is running on port ${port}.`);
+    //     // window.location.replace(`http://${serverName}:${port}`);
+    //   }
+    // });
+    // command.stderr.on("data", (line) => {
+    //   console.error(`command stderr: "${line}"`);
+    //   toast.error(line);
+    // });
+    // await command.spawn();
   }
 
   // async function stop() {
@@ -101,7 +102,7 @@ export class Whisper {
   // }
 
   async getPort(): Promise<number> {
-    return invoke<number>("get_random_port");
+    return await detect();
   }
 
   async download() {
@@ -113,6 +114,7 @@ export class Whisper {
     fs.writeFileSync(zipPath, response.data);
     const zip = new AdmZip(zipPath);
     zip.extractAllTo(this.whisperPath, true);
+    console.log(`Whisper extracted to ${this.whisperPath}`);
 
     let osType = "";
     switch (os.type()) {
