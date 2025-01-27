@@ -1,16 +1,7 @@
-import { resolveResource } from "@tauri-apps/api/path";
-import { exists } from "@tauri-apps/plugin-fs";
-import { Command } from "@tauri-apps/plugin-shell";
-// import { getCurrentWindow } from "@tauri-apps/api/window";
-// import { family } from "@tauri-apps/plugin-os";
-import { invoke } from "@tauri-apps/api/core";
-// import { UnlistenFn } from "@tauri-apps/api/event";
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { LazyStore } from "@tauri-apps/plugin-store";
-import { type } from "@tauri-apps/plugin-os";
-import { getVersion } from "@tauri-apps/api/app";
+
 
 export function useWhisper() {
   const isRunningRef = useRef(false);
@@ -28,8 +19,9 @@ export function useWhisper() {
   }, []);
 
   async function start() {
-    const dependenciesInstalledKey = `isiDependenciesInstalled-${await getVersion()}`;
+    const dependenciesInstalledKey = `isiDependenciesInstalled-${await window.electronAPI.getVersion()}`;
     const store = new LazyStore("store.json");
+    
     const isiDependenciesInstalled = await store.get(dependenciesInstalledKey);
     const venvPath = await resolveResource("Whisper-WebUI/venv");
     const isVenvExists = await exists(venvPath);
