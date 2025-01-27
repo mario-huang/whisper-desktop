@@ -1,4 +1,4 @@
-import { app } from "electron";
+import { app, IpcMainEvent } from "electron";
 import path from "node:path";
 import axios from "axios";
 import fs from "node:fs";
@@ -13,7 +13,8 @@ export class Whisper {
   repository = "Whisper-WebUI";
   whisperPath = path.join(this.userDataPath, this.repository);
 
-  async start(on: (info: string, error?: string) => void) {
+  // async start(on: (info: string, error?: string) => void) {
+    async start(event: IpcMainEvent) {
     const whisperInstalledKey = `isWhisperInstalled-${app.getVersion()}`;
     const store = new Store();
     const isWhisperInstalled = store.get(whisperInstalledKey);
@@ -21,17 +22,19 @@ export class Whisper {
     if (!isWhisperExists || !isWhisperInstalled) {
       try {
         console.log("Downloading Whisper...");
-        on("Installing Whisper dependencies.\nThis will take a few minutes.");
+        event.reply("onStartWhisper", "Installing Whisper dependencies.\nThis will take a few minutes.");
         await this.download();
         store.set(whisperInstalledKey, true);
         console.log("Whisper downloaded.");
-        on("Whisper will start in a few minutes.");
+        event.reply("onStartWhisper", "Whisper will start in a few minutes.");
       } catch (error) {
         console.error(`Error downloading Whisper: ${error}`);
-        on("", "Something went wrong while downloading Whisper.");
+        // on("", "Something went wrong while downloading Whisper.");
+        event.reply("onStartWhisper", "Something went wrong while downloading Whisper.");
       }
     } else {
-      on("Whisper will start in a few seconds.");
+      // on("Whisper will start in a few seconds.");
+      event.reply("onStartWhisper", "Whisper will start in a few seconds.");
     }
 
     // port = await getPort();
@@ -121,6 +124,7 @@ export class Whisper {
     const response = await axios.get(url, { responseType: "arraybuffer" });
     const zipPath = `${this.whisperPath}.zip`;
     fs.writeFileSync(zipPath, response.data);
+    fs.rmSync(zipPath, { recursive: true, force: true });
 
     const zip = new AdmZip(zipPath);
     const extractPath = `${this.whisperPath}-temp`;
@@ -129,6 +133,7 @@ export class Whisper {
       path.join(extractPath, `${this.repository}-${hash}`),
       this.whisperPath
     );
+    fs.rmSync(extractPath, { recursive: true, force: true });
 
     let osType = "";
     switch (os.type()) {
