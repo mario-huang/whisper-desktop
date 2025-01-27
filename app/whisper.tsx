@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import Store from 'electron-store';
+import Store from "electron-store";
 
 export function useWhisper() {
   const isRunningRef = useRef(false);
@@ -19,67 +19,7 @@ export function useWhisper() {
   }, []);
 
   async function start() {
-    const dependenciesInstalledKey = `isiDependenciesInstalled-${await window.electronAPI.getVersion()}`;
-    const store = new LazyStore("store.json");
-    const store = new Store();
-    const isiDependenciesInstalled = await store.get(dependenciesInstalledKey);
-    const venvPath = await resolveResource("Whisper-WebUI/venv");
-    const isVenvExists = await exists(venvPath);
-    if (!isVenvExists || !isiDependenciesInstalled) {
-      console.log("Installing Whisper dependencies...");
-      setInfo(
-        "Installing Whisper dependencies.\nThis will take a few minutes."
-      );
-      await installDependencies();
-      await store.set(dependenciesInstalledKey, true);
-      console.log("Whisper dependencies installed.");
-      setInfo("Whisper will start in a few minutes.");
-    } else {
-      setInfo("Whisper will start in a few seconds.");
-    }
-
-    port = await getPort();
-    const whisperPath = await resolveResource("Whisper-WebUI");
-    const serverName = "localhost";
-    const command = Command.create(
-      "bash",
-      [
-        "./start-webui.sh",
-        "--server_name",
-        serverName,
-        "--server_port",
-        port.toString(),
-        "--inbrowser",
-        "false",
-      ],
-      {
-        cwd: whisperPath,
-        env: {
-          PYTHONUNBUFFERED: "1",
-        },
-      }
-    );
-    command.on("close", (data) => {
-      console.log(
-        `command finished with code ${data.code} and signal ${data.signal}`
-      );
-    });
-    command.on("error", (error) => {
-      console.error(`command error: "${error}"`);
-      toast.error(error);
-    });
-    command.stdout.on("data", (line) => {
-      console.log(`command stdout: "${line}"`);
-      if (line.includes(serverName)) {
-        toast.success(`Whisper is running on port ${port}.`);
-        // window.location.replace(`http://${serverName}:${port}`);
-      }
-    });
-    command.stderr.on("data", (line) => {
-      console.error(`command stderr: "${line}"`);
-      toast.error(line);
-    });
-    await command.spawn();
+    window.electronAPI.startWhisper();
   }
 
   // async function stop() {
@@ -114,9 +54,9 @@ export function useWhisper() {
   //   return family() == "windows";
   // }
 
-  async function getPort(): Promise<number> {
-    return invoke<number>("get_random_port");
-  }
+  // async function getPort(): Promise<number> {
+  //   return invoke<number>("get_random_port");
+  // }
 
   // async function subscribeCloseRequested() {
   //   this.unlistenCloseRequested = await this.appWindow.onCloseRequested(
@@ -135,38 +75,38 @@ export function useWhisper() {
   //   }
   // }
 
-  async function installDependencies() {
-    const whisperPath = await resolveResource("Whisper-WebUI");
-    const osType = type();
-    console.log(`osType: ${osType}`);
-    const command = Command.create(
-      "bash",
-      [`./install-dependencies-${osType}.sh`],
-      {
-        cwd: whisperPath,
-        env: {
-          PYTHONUNBUFFERED: "1",
-        },
-      }
-    );
-    command.on("close", (data) => {
-      console.log(
-        `command finished with code ${data.code} and signal ${data.signal}`
-      );
-    });
-    command.on("error", (error) => {
-      console.error(`command error: "${error}"`);
-      toast.error(error);
-    });
-    command.stdout.on("data", (line) => {
-      console.log(`command stdout: "${line}"`);
-    });
-    command.stderr.on("data", (line) => {
-      console.error(`command stderr: "${line}"`);
-      toast.error(line);
-    });
-    await command.execute();
-  }
+  // async function installDependencies() {
+  //   const whisperPath = await resolveResource("Whisper-WebUI");
+  //   const osType = type();
+  //   console.log(`osType: ${osType}`);
+  //   const command = Command.create(
+  //     "bash",
+  //     [`./install-dependencies-${osType}.sh`],
+  //     {
+  //       cwd: whisperPath,
+  //       env: {
+  //         PYTHONUNBUFFERED: "1",
+  //       },
+  //     }
+  //   );
+  //   command.on("close", (data) => {
+  //     console.log(
+  //       `command finished with code ${data.code} and signal ${data.signal}`
+  //     );
+  //   });
+  //   command.on("error", (error) => {
+  //     console.error(`command error: "${error}"`);
+  //     toast.error(error);
+  //   });
+  //   command.stdout.on("data", (line) => {
+  //     console.log(`command stdout: "${line}"`);
+  //   });
+  //   command.stderr.on("data", (line) => {
+  //     console.error(`command stderr: "${line}"`);
+  //     toast.error(line);
+  //   });
+  //   await command.execute();
+  // }
 
-  return info;
+  // return info;
 }

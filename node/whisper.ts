@@ -108,7 +108,7 @@ export class Whisper {
   async download() {
     fs.rmSync(this.whisperPath, { recursive: true, force: true });
     const url =
-      "https://github.com/mario-huang/Whisper-WebUI/archive/2a9aa2a0437aa15723920669f2a50cf8ff377ddf.zip";
+      "https://github.com/mario-huang/Whisper-WebUI/tree/603e4f77143e9d4e8fa9e7f8badf5b3e5f01e1bb.zip";
     const response = await axios.get(url, { responseType: "arraybuffer" });
     const zipPath = `${this.whisperPath}.zip`;
     fs.writeFileSync(zipPath, response.data);
