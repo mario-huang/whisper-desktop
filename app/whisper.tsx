@@ -6,15 +6,19 @@ export function useWhisper() {
   const isRunningRef = useRef(false);
   const [info, setInfo] = useState("");
 
-  window.electronAPI.onStartWhisper((data) => {
-    setInfo(data);
-  });
-
   useEffect(() => {
     if (isRunningRef.current) {
       return;
     }
     isRunningRef.current = true;
+    window.electronAPI.onStartWhisper((data) => {
+      if (data.startsWith("http://localhost:")) {
+        // window.location.replace(data);
+        toast.success(data);
+      } else {
+        setInfo(data);
+      }
+    });
     start();
   }, []);
 

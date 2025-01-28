@@ -53,7 +53,7 @@ export class Whisper {
         console.error(`Error downloading Whisper: ${error}`);
         event.reply(
           "onStartWhisper",
-          "Something went wrong while downloading Whisper."
+          `Something went wrong while downloading Whisper.\n${error}`
         );
       }
     } else {
@@ -63,13 +63,10 @@ export class Whisper {
     const port = await this.getPort();
     console.log(`Port: ${port}`);
 
-    const serverName = "localhost";
     const child = spawn(
-      "bash",
+      "./venv/bin/python",
       [
-        "./start-webui.sh",
-        "--server_name",
-        serverName,
+        "app.py",
         "--server_port",
         `${port}`,
         "--inbrowser",
@@ -84,11 +81,17 @@ export class Whisper {
       }
     );
     child.stdout.on("data", (data) => {
-      console.error(`[stdout]: ${data}`);
+      console.log(`[stdout]: ${data}`);
+      if (`${data}`.includes("Running on local URL")) {
+        event.reply(
+          "onStartWhisper",
+          `http://localhost:${port}`
+        );
+      }
     });
 
     child.stderr.on("data", (data) => {
-      console.log(`[stderr]: ${data}`);
+      console.error(`[stderr]: ${data}`);
     });
     child.on("close", (code) => {
       console.log(`Script exited with code ${code}`);
@@ -96,24 +99,12 @@ export class Whisper {
         console.log("Script executed successfully!");
       } else {
         console.error("Script execution failed!");
+        event.reply(
+          "onStartWhisper",
+          `Something went wrong while starting Whisper.\n${code}`
+        );
       }
     });
-    // command.on("error", (error) => {
-    //   console.error(`command error: "${error}"`);
-    //   toast.error(error);
-    // });
-    // command.stdout.on("data", (line) => {
-    //   console.log(`command stdout: "${line}"`);
-    //   if (line.includes(serverName)) {
-    //     toast.success(`Whisper is running on port ${port}.`);
-    //     // window.location.replace(`http://${serverName}:${port}`);
-    //   }
-    // });
-    // command.stderr.on("data", (line) => {
-    //   console.error(`command stderr: "${line}"`);
-    //   toast.error(line);
-    // });
-    // await command.spawn();
   }
 
   // async function stop() {
