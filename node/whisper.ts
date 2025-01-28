@@ -11,58 +11,93 @@ import { detect } from "detect-port";
 export class Whisper {
   userDataPath = app.getPath("userData");
   repository = "Whisper-WebUI";
-  whisperPath = path.join(this.userDataPath, this.repository);
+  hash = "a380697283635148ac69c94e5c597c184a53d224";
+  dirName = `${this.repository}-${this.hash}`;
+  whisperPath = path.join(this.userDataPath, this.dirName);
 
-  // async start(on: (info: string, error?: string) => void) {
-    async start(event: IpcMainEvent) {
-    const whisperInstalledKey = `isWhisperInstalled-${app.getVersion()}`;
+  osType = "";
+
+  constructor() {
+    switch (os.type()) {
+      case "Linux":
+        this.osType = "linux";
+        break;
+      case "Darwin":
+        this.osType = "macos";
+        break;
+      case "Windows_NT":
+        this.osType = "windows";
+        break;
+      default:
+        break;
+    }
+  }
+
+  async start(event: IpcMainEvent) {
+    const whisperInstalledKey = this.dirName;
     const store = new Store();
     const isWhisperInstalled = store.get(whisperInstalledKey);
     const isWhisperExists = fs.existsSync(this.whisperPath);
     if (!isWhisperExists || !isWhisperInstalled) {
       try {
         console.log("Downloading Whisper.");
-        event.reply("onStartWhisper", "Downloading Whisper.\nThis will take a few minutes.");
+        event.reply(
+          "onStartWhisper",
+          "Downloading Whisper.\nThis will take a few minutes."
+        );
         await this.download();
         store.set(whisperInstalledKey, true);
         console.log("Whisper downloaded.");
         event.reply("onStartWhisper", "Whisper will start in a few minutes.");
       } catch (error) {
         console.error(`Error downloading Whisper: ${error}`);
-        // on("", "Something went wrong while downloading Whisper.");
-        event.reply("onStartWhisper", "Something went wrong while downloading Whisper.");
+        event.reply(
+          "onStartWhisper",
+          "Something went wrong while downloading Whisper."
+        );
       }
     } else {
-      // on("Whisper will start in a few seconds.");
       event.reply("onStartWhisper", "Whisper will start in a few seconds.");
     }
 
-    // port = await getPort();
-    // const whisperPath = await resolveResource("Whisper-WebUI");
-    // const serverName = "localhost";
-    // const command = Command.create(
-    //   "bash",
-    //   [
-    //     "./start-webui.sh",
-    //     "--server_name",
-    //     serverName,
-    //     "--server_port",
-    //     port.toString(),
-    //     "--inbrowser",
-    //     "false",
-    //   ],
-    //   {
-    //     cwd: whisperPath,
-    //     env: {
-    //       PYTHONUNBUFFERED: "1",
-    //     },
-    //   }
-    // );
-    // command.on("close", (data) => {
-    //   console.log(
-    //     `command finished with code ${data.code} and signal ${data.signal}`
-    //   );
-    // });
+    const port = await this.getPort();
+    console.log(`Port: ${port}`);
+
+    const serverName = "localhost";
+    const child = spawn(
+      "bash",
+      [
+        "./start-webui.sh",
+        "--server_name",
+        serverName,
+        "--server_port",
+        `${port}`,
+        "--inbrowser",
+        "false",
+      ],
+      {
+        cwd: this.whisperPath,
+        env: {
+          ...process.env,
+          PYTHONUNBUFFERED: "1",
+        },
+      }
+    );
+    child.stdout.on("data", (data) => {
+      console.error(`[stdout]: ${data}`);
+    });
+
+    child.stderr.on("data", (data) => {
+      console.log(`[stderr]: ${data}`);
+    });
+    child.on("close", (code) => {
+      console.log(`Script exited with code ${code}`);
+      if (code === 0) {
+        console.log("Script executed successfully!");
+      } else {
+        console.error("Script execution failed!");
+      }
+    });
     // command.on("error", (error) => {
     //   console.error(`command error: "${error}"`);
     //   toast.error(error);
@@ -118,9 +153,15 @@ export class Whisper {
   }
 
   async download() {
-    fs.rmSync(this.whisperPath, { recursive: true, force: true });
-    const hash = "7643633ab0250bf42e0e03e2b3335c84971f6962";
-    const url = `https://github.com/mario-huang/${this.repository}/archive/${hash}.zip`;
+    const items = fs.readdirSync(this.userDataPath);
+    for (const item in items) {
+      const fullPath = path.join(this.userDataPath, item);
+      if (item.startsWith(this.repository)) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+      }
+    }
+
+    const url = `https://github.com/mario-huang/${this.repository}/archive/${this.hash}.zip`;
     const response = await axios.get(url, { responseType: "arraybuffer" });
     const zipPath = `${this.whisperPath}.zip`;
     fs.writeFileSync(zipPath, response.data);
@@ -128,30 +169,9 @@ export class Whisper {
     const zip = new AdmZip(zipPath);
     const extractPath = `${this.whisperPath}-temp`;
     zip.extractAllTo(extractPath, true, true);
-    fs.renameSync(
-      path.join(extractPath, `${this.repository}-${hash}`),
-      this.whisperPath
-    );
-    fs.rmSync(zipPath, { recursive: true, force: true });
-    fs.rmSync(extractPath, { recursive: true, force: true });
+    fs.renameSync(path.join(extractPath, this.dirName), this.whisperPath);
 
-    let osType = "";
-    switch (os.type()) {
-      case "Linux":
-        osType = "linux";
-        break;
-      case "Darwin":
-        osType = "macos";
-        break;
-      case "Windows_NT":
-        osType = "windows";
-        break;
-      default:
-        break;
-    }
-    console.log(`osType: ${osType}`);
-
-    const child = spawn("bash", [`./install-dependencies-${osType}.sh`], {
+    const child = spawn("bash", [`./install-dependencies-${this.osType}.sh`], {
       cwd: this.whisperPath,
       env: {
         ...process.env,
@@ -165,7 +185,7 @@ export class Whisper {
       });
 
       child.stderr.on("data", (data) => {
-        console.log(`[stderr]: ${data}`);
+        console.error(`[stderr]: ${data}`);
       });
 
       child.on("close", (code) => {
